@@ -63,6 +63,80 @@ const glm::mat4 Camera::GetProjectionMatrix() const
     }
     return Proj;
 }
+void Camera::ProcessKeyboard(ECameraMovementType direction, float deltaTime)
+{
+    float velocity = (float)(cameraSpeedFactor * deltaTime);
+    switch (direction) {
+    case ECameraMovementType::FORWARD:
+        position += forward * velocity;
+        break;
+    case ECameraMovementType::BACKWARD:
+        position -= forward * velocity;
+        break;
+    case ECameraMovementType::LEFT:
+        position -= right * velocity;
+        break;
+    case ECameraMovementType::RIGHT:
+        position += right * velocity;
+        break;
+    case ECameraMovementType::UP:
+        position += up * velocity;
+        break;
+    case ECameraMovementType::DOWN:
+        position -= up * velocity;
+        break;
+    }
+}
+void Camera::MouseControl(float xPos, float yPos)
+{
+    if (bFirstMouseMove) {
+        lastX = xPos;
+        lastY = yPos;
+        bFirstMouseMove = false;
+    }
+
+    float xChange = xPos - lastX;
+    float yChange = lastY - yPos;
+    lastX = xPos;
+    lastY = yPos;
+
+    if (fabs(xChange) <= 1e-6 && fabs(yChange) <= 1e-6) {
+        return;
+    }
+    xChange *= mouseSensitivity;
+    yChange *= mouseSensitivity;
+
+    ProcessMouseMovement(xChange, yChange);
+}
+void Camera::ProcessMouseScroll(float yOffset)
+{
+    if (FoVy >= 1.0f && FoVy <= 90.0f) {
+        FoVy -= yOffset;
+    }
+    if (FoVy <= 1.0f)
+        FoVy = 1.0f;
+    if (FoVy >= 90.0f)
+        FoVy = 90.0f;
+}
+void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
+{
+    yaw += xOffset;
+    pitch += yOffset;
+
+    //std::cout << "yaw = " << yaw << std::endl;
+    //std::cout << "pitch = " << pitch << std::endl;
+
+    // Avem grijã sã nu ne dãm peste cap
+    if (constrainPitch) {
+        if (pitch > 89.0f)
+            pitch = 89.0f;
+        if (pitch < -89.0f)
+            pitch = -89.0f;
+    }
+
+    // Se modificã vectorii camerei pe baza unghiurilor Euler
+    UpdateCameraVectors();
+}
 void Camera::UpdateCameraVectors()
 {
     // Calculate the new forward vector
