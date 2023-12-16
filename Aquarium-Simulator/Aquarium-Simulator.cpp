@@ -83,6 +83,19 @@ int main(int argc, char** argv)
     // Create camera
     pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0, 1.0, 3.0));
 
+    // configure global opengl state
+    // -----------------------------
+    glEnable(GL_DEPTH_TEST);
+
+    // build and compile shaders
+    // -------------------------
+    Shader shadowMappingShader("ShadowMapping.vs", "ShadowMapping.fs");
+    Shader shadowMappingDepthShader("ShadowMappingDepth.vs", "ShadowMappingDepth.fs");
+
+    // load textures
+    // -------------
+    unsigned int floorTexture = CreateTexture(strExePath + "\\Floor.png");
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
