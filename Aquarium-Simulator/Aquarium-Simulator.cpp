@@ -120,6 +120,17 @@ int main(int argc, char** argv)
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // shader configuration
+   // --------------------
+    shadowMappingShader.Use();
+    shadowMappingShader.SetInt("diffuseTexture", 0);
+    shadowMappingShader.SetInt("shadowMap", 1);
+
+    // lighting info
+    // -------------
+    glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
+
+    glEnable(GL_CULL_FACE);
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))

@@ -3,7 +3,6 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include <GL/glew.h>
-#include "Shader.h"
 enum ECameraMovementType
 {
     UNKNOWN,
@@ -47,10 +46,6 @@ public:
     void MouseControl(float xPos, float yPos);
 
     void ProcessMouseScroll(float yOffset);
-    unsigned int aquariumVAO = 0;
-    unsigned int aquariumVBO = 0;
-    void renderAquarium();
-    void renderScene(const Shader& shader);
 
 private:
     void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
