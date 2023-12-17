@@ -187,6 +187,38 @@ void Camera::renderAquarium()
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 }
+void Camera::renderScene(const Shader& shader)
+{
+    // floor
+    glm::mat4 model;
+    shader.SetMat4("model", model);
+    renderFloor();
+
+    // cube
+    model = glm::mat4();
+    model = glm::translate(model, glm::vec3(0.0f, 1.75f, 0.0));
+    model = glm::scale(model, glm::vec3(0.75f));
+    shader.SetMat4("model", model);
+    renderCube();
+    //2 cube
+    model = glm::translate(model, glm::vec3(4.0f, 1.0f, 0.0));
+    model = glm::rotate(model, glm::radians(60.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.75f));
+    shader.SetMat4("model", model);
+    renderCube();
+    //3 cube
+    model = glm::translate(model, glm::vec3(-4.0f, 2.75f, 0.0));
+    model = glm::rotate(model, glm::radians(157.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.75f));
+    shader.SetMat4("model", model);
+    renderCube();
+    //4 cube
+    model = glm::translate(model, glm::vec3(-2.0f, 0.75f, 1.0));
+    model = glm::rotate(model, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.75f));
+    shader.SetMat4("model", model);
+    renderCube();
+}
 void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
 {
     yaw += xOffset;
