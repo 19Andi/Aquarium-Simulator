@@ -25,7 +25,8 @@ private:
     const float PITCH = 0.0f;
     const float FOV = 45.0f;
     glm::vec3 startPosition;
-
+    unsigned int aquariumVAO = 0;
+    unsigned int aquariumVBO = 0;
 public:
     Camera(const int width, const int height, const glm::vec3& position);
 
@@ -46,6 +47,9 @@ public:
     void MouseControl(float xPos, float yPos);
 
     void ProcessMouseScroll(float yOffset);
+    unsigned int aquariumVAO = 0;
+    unsigned int aquariumVBO = 0;
+    void renderAquarium();
 
 private:
     void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
