@@ -1,4 +1,6 @@
-// ViewOBJModel.cpp : This file contains the 'main' function. Program execution begins and ends there.
+Ôªø// ViewOBJModel.cpp : This file contains the 'main' function. Program execution begins and ends there.
+
+#include <stb_image.h>
 
 #include <Windows.h>
 #include <locale>
@@ -189,7 +191,7 @@ private:
 		//std::cout << "yaw = " << yaw << std::endl;
 		//std::cout << "pitch = " << pitch << std::endl;
 
-		// Avem grij„ s„ nu ne d„m peste cap
+		// Avem grij√£ s√£ nu ne d√£m peste cap
 		if (constrainPitch) {
 			if (pitch > 89.0f)
 				pitch = 89.0f;
@@ -197,7 +199,7 @@ private:
 				pitch = -89.0f;
 		}
 
-		// Se modific„ vectorii camerei pe baza unghiurilor Euler
+		// Se modific√£ vectorii camerei pe baza unghiurilor Euler
 		UpdateCameraVectors();
 	}
 
@@ -262,6 +264,73 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	}
 }
+unsigned int transparentVAO = 0; 
+unsigned int transparentVBO = 0;
+void drawAquarium() {
+	if (transparentVAO == 0) {
+		float transparentVertices[] = {
+			// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+			0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+			1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+			1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+			1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+		};
+
+		glGenVertexArrays(1, &transparentVAO);
+		glGenBuffers(1, &transparentVBO);
+		glBindVertexArray(transparentVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glBindVertexArray(0);
+	}
+	//draw aquarium
+	glBindVertexArray(transparentVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+unsigned int CreateTexture(const std::string& strTexturePath)
+{
+	unsigned int textureId = -1;
+
+	// load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+	unsigned char* data = stbi_load(strTexturePath.c_str(), &width, &height, &nrChannels, 0);
+	if (data) {
+		GLenum format;
+		if (nrChannels == 1)
+			format = GL_RED;
+		else if (nrChannels == 3)
+			format = GL_RGB;
+		else if (nrChannels == 4)
+			format = GL_RGBA;
+
+		glGenTextures(1, &textureId);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		// set the texture wrapping parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		// set texture filtering parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else {
+		std::cout << "Failed to load texture: " << strTexturePath << std::endl;
+	}
+	stbi_image_free(data);
+
+	return textureId;
+}
 
 int main()
 {
@@ -291,6 +360,10 @@ int main()
 	glewInit();
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	float vertices[] = {
@@ -368,6 +441,14 @@ int main()
 
 	glm::vec3 lightPos(0.0f, 2.0f, 1.0f);
 
+	
+
+	glm::vec3 fishPos(0.0f, 0.0f, 0.0f);
+	float fishIncrement = -0.01f;
+	float lastFishIncrement;
+	float fishRotation = 0.0f;
+	float fishRotationIncrement = 0.4f;
+
 	wchar_t buffer[MAX_PATH];
 	GetCurrentDirectoryW(MAX_PATH, buffer);
 
@@ -379,9 +460,18 @@ int main()
 
 	Shader lightingShader((currentPath + "\\Shaders\\PhongLight.vs").c_str(), (currentPath + "\\Shaders\\PhongLight.fs").c_str());
 	Shader lampShader((currentPath + "\\Shaders\\Lamp.vs").c_str(), (currentPath + "\\Shaders\\Lamp.fs").c_str());
+	Shader windowShader((currentPath + "\\Shaders\\Blending.vs").c_str(), (currentPath + "\\Shaders\\Blending.fs").c_str());
 
-	std::string piratObjFileName = (currentPath + "\\Models\\Fish\\12265_Fish_v1_L2.obj");
-	Model piratObjModel(piratObjFileName, false);
+	//load aquarium texture
+	unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\blending_transparent_window.png").c_str());
+
+	// shader configuration
+    // --------------------
+	windowShader.use();
+	windowShader.setInt("texture1", 0);
+
+	std::string fishObjFileName = (currentPath + "\\Models\\Fish\\12265_Fish_v1_L2.obj");
+	Model fishObjModel(fishObjFileName, false);
 
 	// render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -399,6 +489,20 @@ int main()
 		lightPos.x = 0.5 * cos(glfwGetTime());
 		lightPos.z = 0.5 * sin(glfwGetTime());
 
+		//change fish poz
+		fishPos.x += fishIncrement;
+		if (abs(fishPos.x) >= 3.0f) {
+			fishRotation += fishRotationIncrement;
+			fishIncrement = 0;
+			if (fishRotation <= 0.0f || fishRotation >= 180.0f) {
+				fishRotationIncrement *= -1.0f;
+				if (fishRotationIncrement < 0)
+					fishIncrement = 0.01f;
+				else
+					fishIncrement = -0.01f;
+			}
+		}
+
 		lightingShader.use();
 		lightingShader.SetVec3("objectColor", 0.5f, 1.0f, 0.31f);
 		lightingShader.SetVec3("lightColor", 1.0f, 1.0f, 1.0f);
@@ -413,9 +517,31 @@ int main()
 		//lightingShader.setMat4("model", model);
 		//objModel.Draw(lightingShader);
 
-		glm::mat4 piratModel = glm::scale(glm::mat4(1.0), glm::vec3(1.f));
-		lightingShader.setMat4("model", piratModel);
-		piratObjModel.Draw(lightingShader);
+		//draw fish
+		/*glm::mat4 fishModel = glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
+		fishModel = glm::rotate(fishModel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		lightingShader.setMat4("model", fishModel);
+		fishObjModel.Draw(lightingShader);*/
+
+		glm::mat4 fishModel = glm::translate(glm::mat4(1.0), glm::vec3(2.0f, 2.0f, -2.0f) + fishPos);
+		fishModel = glm::scale(fishModel, glm::vec3(0.03f));
+		fishModel = glm::rotate(fishModel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		fishModel = glm::rotate(fishModel, glm::radians(fishRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+		
+		lightingShader.setMat4("model", fishModel);
+		fishObjModel.Draw(lightingShader);
+
+		//draw aquarium
+		glBindTexture(GL_TEXTURE_2D, windowTexture);
+		windowShader.use();
+
+		glm::mat4 model = glm::mat4(1.0f);
+		windowShader.setMat4("model", model);
+		glm::mat4 projection = pCamera->GetProjectionMatrix();
+		glm::mat4 view = pCamera->GetViewMatrix();
+		windowShader.setMat4("projection", projection);
+		windowShader.setMat4("view", view);
+		drawAquarium();
 
 		// also draw the lamp object
 		lampShader.use();

@@ -73,7 +73,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\_external\GLEW\;..\_external\GLFW\;..\_external\glm\;..\_external\stb\;$(IncludePath)</IncludePath>
+    <IncludePath>..\_external\GLEW\;..\_external\GLFW\;..\_external\glm\;..\_external\stb\;..\_external\stb-master\;$(IncludePath)</IncludePath>
     <LibraryPath>..\_external\GLEW\x86\;..\_external\GLFW\x86\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
