@@ -398,6 +398,8 @@ FodyWeavers.xsd
 *.sln.iml
 
 #Externals
-!/Aquarium-Simulator/_external
-!/Aquarium-Simulator/Models
+!Aquarium-Simulator/_external/GLEW/x64
+!Aquarium-Simulator/_external/GLEW/x86
+!Aquarium-Simulator/_external/GLFW/x64
+!Aquarium-Simulator/_external/GLFW/x86
 !*.obj
