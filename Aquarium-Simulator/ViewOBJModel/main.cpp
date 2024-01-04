@@ -9,6 +9,7 @@
 #include <stdlib.h> // necesare pentru citirea shader-elor
 #include <stdio.h>
 #include <math.h> 
+#include <map>
 
 #include <GL/glew.h>
 
@@ -23,6 +24,7 @@
 #include <sstream>
 #include "Shader.h"
 #include "Model.h"
+#include "TransparentObj.h"
 
 #pragma comment (lib, "glfw3dll.lib")
 #pragma comment (lib, "glew32.lib")
@@ -264,10 +266,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	}
 }
-unsigned int transparentVAO = 0; 
-unsigned int transparentVBO = 0;
-void drawAquarium() {
-	if (transparentVAO == 0) {
+unsigned int transparentRectVAO = 0; 
+unsigned int transparentRectVBO = 0;
+glm::vec3 rectCenter(5.0f, 0.0f, 0.0f);
+void drawRect() {
+	if (transparentRectVAO == 0) {
 		float transparentVertices[] = {
 			// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
 			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
@@ -279,10 +282,10 @@ void drawAquarium() {
 			1.0f,  0.5f,  0.0f,  1.0f,  0.0f
 		};
 
-		glGenVertexArrays(1, &transparentVAO);
-		glGenBuffers(1, &transparentVBO);
-		glBindVertexArray(transparentVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+		glGenVertexArrays(1, &transparentRectVAO);
+		glGenBuffers(1, &transparentRectVBO);
+		glBindVertexArray(transparentRectVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, transparentRectVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -291,10 +294,44 @@ void drawAquarium() {
 		glBindVertexArray(0);
 	}
 	//draw aquarium
-	glBindVertexArray(transparentVAO);
+	glBindVertexArray(transparentRectVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
+
+unsigned int transparentSquareVAO = 0;
+unsigned int transparentSquareRectVBO = 0;
+glm::vec3 squareCenter(0.0f, 0.0f, 0.5f);
+void drawSquare() {
+	if (transparentSquareVAO == 0) {
+		float transparentVertices[] = {
+			// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+			0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+			0.0f, -0.5f,  1.0f,  1.0f,  1.0f,
+
+			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+			0.0f, -0.5f,  1.0f,  1.0f,  1.0f,
+			0.0f,  0.5f,  1.0f,  1.0f,  0.0f
+		};
+
+		glGenVertexArrays(1, &transparentSquareVAO);
+		glGenBuffers(1, &transparentSquareRectVBO);
+		glBindVertexArray(transparentSquareVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, transparentSquareRectVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glBindVertexArray(0);
+	}
+	//draw aquarium
+	glBindVertexArray(transparentSquareVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
 unsigned int CreateTexture(const std::string& strTexturePath)
 {
 	unsigned int textureId = -1;
@@ -468,7 +505,7 @@ int main()
 	Shader windowShader((currentPath + "\\Shaders\\Blending.vs").c_str(), (currentPath + "\\Shaders\\Blending.fs").c_str());
 
 	//load aquarium texture
-	unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\dark-wall.png").c_str());
+	unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\ps-neutral.png").c_str());
 
 	// shader configuration
     // --------------------
@@ -478,6 +515,24 @@ int main()
 	std::string fishObjFileName = (currentPath + "\\Models\\Fish\\12265_Fish_v1_L2.obj");
 	Model fishObjModel(fishObjFileName, false);
 
+	//transparent objects location
+	vector<TransparentObj> transparentObjects;
+	const float aquariumLength = 20.0f;
+	const float aquariumWidth = 5.0f;
+	const float aquariumHeight = 5.0f;
+
+	for (float i = 0.0f; i < aquariumLength; i += 1.0f) {
+		for (uint8_t j = 0.0f; j < aquariumHeight; j += 1.0f) {
+			transparentObjects.push_back(TransparentObj(glm::vec3(i, j, -0.0001f), TransparentObj::Type::GLASS, TransparentObj::WindowType::RECT));
+			transparentObjects.push_back(TransparentObj(glm::vec3(i, j, aquariumWidth), TransparentObj::Type::GLASS, TransparentObj::WindowType::RECT));
+		}
+	}
+	for (float i = 0.0f; i < aquariumWidth; i += 1.0f) {
+		for (uint8_t j = 0.0f; j < aquariumHeight; j += 1.0f) {
+			transparentObjects.push_back(TransparentObj(glm::vec3(0.0f, j, i), TransparentObj::Type::GLASS, TransparentObj::WindowType::SQUARE));
+			transparentObjects.push_back(TransparentObj(glm::vec3(aquariumLength, j, i), TransparentObj::Type::GLASS, TransparentObj::WindowType::SQUARE));
+		}
+	}
 	// render loop
 	while (!glfwWindowShouldClose(window)) {
 		// per-frame time logic
@@ -494,9 +549,16 @@ int main()
 		lightPos.x = 0.5 * cos(glfwGetTime());
 		lightPos.z = 0.5 * sin(glfwGetTime());
 
+		//sort transparent objects
+		std::map<float, TransparentObj*> sortedMap;
+		for (uint8_t i = 0; i < transparentObjects.size(); i++) {
+			float distance = glm::length(pCamera->GetPosition() - transparentObjects[i].pos);
+			sortedMap[distance] = &(transparentObjects[i]);
+		}
+
 		//change fish poz
 		fishPos.x += fishIncrement;
-		if (abs(fishPos.x) >= 3.0f) {
+		if (abs(fishPos.x) >= 4.0f) {
 			fishRotation += fishRotationIncrement;
 			fishIncrement = 0;
 			if (fishRotation <= 0.0f || fishRotation >= 180.0f) {
@@ -531,7 +593,7 @@ int main()
 		lightingShader.setMat4("model", fishModel);
 		fishObjModel.Draw(lightingShader);*/
 
-		glm::mat4 fishModel = glm::translate(glm::mat4(1.0), glm::vec3(2.0f, 0.0f, 1.3f) + fishPos);
+		glm::mat4 fishModel = glm::translate(glm::mat4(1.0), glm::vec3(6.0f, 0.0f, 3.3f) + fishPos);
 		fishModel = glm::scale(fishModel, glm::vec3(0.03f));
 		fishModel = glm::rotate(fishModel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		fishModel = glm::rotate(fishModel, glm::radians(fishRotation), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -539,21 +601,30 @@ int main()
 		lightingShader.setMat4("model", fishModel);
 		fishObjModel.Draw(lightingShader);
 
-		//draw aquarium
+		//draw transparent obj
 		glBindTexture(GL_TEXTURE_2D, windowTexture);
 		windowShader.use();
-
-		glm::mat4 model = glm::mat4(1.0f);
-		windowShader.setMat4("model", model);
 		glm::mat4 projection = pCamera->GetProjectionMatrix();
 		glm::mat4 view = pCamera->GetViewMatrix();
 		windowShader.setMat4("projection", projection);
 		windowShader.setMat4("view", view);
-		drawAquarium();
 
-		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 2.0f));
-		windowShader.setMat4("model", model);
-		drawAquarium();
+		//furthest object is drawn first
+		for (std::map<float, TransparentObj*>::reverse_iterator it = sortedMap.rbegin(); it != sortedMap.rend(); ++it)
+		{
+			if (it->second->type == TransparentObj::Type::GLASS) {
+				glm::mat4 model = glm::mat4(1.0f);
+				model = glm::translate(model, it->second->pos);
+				windowShader.setMat4("model", model);
+				if (it->second->windowType == TransparentObj::WindowType::SQUARE) {
+					drawSquare();
+				}
+				if (it->second->windowType == TransparentObj::WindowType::RECT) {
+					drawRect();
+				}
+			}
+			
+		}
 
 		// also draw the lamp object
 		lampShader.use();
