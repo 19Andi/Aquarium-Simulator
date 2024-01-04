@@ -400,3 +400,4 @@ FodyWeavers.xsd
 #Externals
 !/Aquarium-Simulator/_external
 !/Aquarium-Simulator/Models
+!*.obj
