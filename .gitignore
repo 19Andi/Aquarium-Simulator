@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+#Externals
+!/Aquarium-Simulator/_external
+!/Aquarium-Simulator/Models
