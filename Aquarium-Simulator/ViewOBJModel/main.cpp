@@ -304,7 +304,7 @@ unsigned int CreateTexture(const std::string& strTexturePath)
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
 	unsigned char* data = stbi_load(strTexturePath.c_str(), &width, &height, &nrChannels, 0);
 	if (data) {
-		GLenum format;
+		GLenum format = 4;
 		if (nrChannels == 1)
 			format = GL_RED;
 		else if (nrChannels == 3)
@@ -323,6 +323,11 @@ unsigned int CreateTexture(const std::string& strTexturePath)
 		// set texture filtering parameters
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	else {
 		std::cout << "Failed to load texture: " << strTexturePath << std::endl;
@@ -463,7 +468,7 @@ int main()
 	Shader windowShader((currentPath + "\\Shaders\\Blending.vs").c_str(), (currentPath + "\\Shaders\\Blending.fs").c_str());
 
 	//load aquarium texture
-	unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\blending_transparent_window.png").c_str());
+	unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\dark-wall.png").c_str());
 
 	// shader configuration
     // --------------------
@@ -503,6 +508,9 @@ int main()
 			}
 		}
 
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		lightingShader.use();
 		lightingShader.SetVec3("objectColor", 0.5f, 1.0f, 0.31f);
 		lightingShader.SetVec3("lightColor", 1.0f, 1.0f, 1.0f);
@@ -523,7 +531,7 @@ int main()
 		lightingShader.setMat4("model", fishModel);
 		fishObjModel.Draw(lightingShader);*/
 
-		glm::mat4 fishModel = glm::translate(glm::mat4(1.0), glm::vec3(2.0f, 2.0f, -2.0f) + fishPos);
+		glm::mat4 fishModel = glm::translate(glm::mat4(1.0), glm::vec3(2.0f, 0.0f, 1.3f) + fishPos);
 		fishModel = glm::scale(fishModel, glm::vec3(0.03f));
 		fishModel = glm::rotate(fishModel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		fishModel = glm::rotate(fishModel, glm::radians(fishRotation), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -541,6 +549,10 @@ int main()
 		glm::mat4 view = pCamera->GetViewMatrix();
 		windowShader.setMat4("projection", projection);
 		windowShader.setMat4("view", view);
+		drawAquarium();
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 2.0f));
+		windowShader.setMat4("model", model);
 		drawAquarium();
 
 		// also draw the lamp object
