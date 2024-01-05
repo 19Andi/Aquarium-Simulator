@@ -44,6 +44,7 @@ bool Model::rotate180(float rotateIncrement)
     if (currentRotationIncrement >= 180.0f) {
         currentRotationIncrement = 0.0f;
         rotation = std::floor(rotation);
+        rotation = std::fmod(rotation, 360.0f);
         return true;
     }
     currentRotationIncrement += rotateIncrement;
