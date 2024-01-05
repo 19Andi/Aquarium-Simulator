@@ -266,6 +266,39 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	}
 }
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+
 unsigned int transparentRectVAO = 0; 
 unsigned int transparentRectVBO = 0;
 glm::vec3 rectCenter(5.0f, 0.0f, 0.0f);
@@ -423,13 +456,13 @@ void renderFloor()
 		// set up vertex data (and buffer(s)) and configure vertex attributes
 		float planeVertices[] = {
 			// positions            // normals         // texcoords
-			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			25.0f, 0.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, 0.0f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+			-25.0f, 0.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
 
-			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-			25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+			25.0f, 0.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, 0.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			25.0f, 0.0f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 		};
 		// plane VAO
 		unsigned int planeVBO;
@@ -496,7 +529,7 @@ void renderScene(Shader& shader){
 	shader.setMat4("model", model);
 	fishObjModel.Draw(shader);
 
-	model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 3.3f));
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(8.0f, 0.0f, 3.3f));
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(0.03f));
 	shader.setMat4("model", model);
@@ -601,6 +634,7 @@ int main()
 	Shader lampShader((currentPath + "\\Shaders\\Lamp.vs").c_str(), (currentPath + "\\Shaders\\Lamp.fs").c_str());
 	Shader windowShader((currentPath + "\\Shaders\\Blending.vs").c_str(), (currentPath + "\\Shaders\\Blending.fs").c_str());
 	Shader skyboxShader((currentPath + "\\Shaders\\Skybox.vs").c_str(), (currentPath + "\\Shaders\\Skybox.fs").c_str());
+	Shader debugQuad((currentPath + "\\Shaders\\DebugQuad.vs").c_str(), (currentPath + "\\Shaders\\DebugQuad.fs").c_str());
 
 	//load aquarium texture
 	//unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\ps-neutral.png").c_str());
@@ -629,7 +663,7 @@ int main()
 
 	// configure depth map FBO
 	// -----------------------
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
 	unsigned int depthMapFBO;
 	glGenFramebuffers(1, &depthMapFBO);
 	// create depth texture
@@ -705,8 +739,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// change light position over time
-		lightPos.x = sin(glfwGetTime()) * 0.00000000000000001f;
-		lightPos.z = cos(glfwGetTime()) * 0.00000000000000001f;
+		//lightPos.x = sin(glfwGetTime()) * 0.00000000000000001f;
+		//lightPos.z = cos(glfwGetTime()) * 0.00000000000000001f;
 		//lightPos.y = 5.0 + cos(glfwGetTime()) * 1.0f;
 
 		//sort transparent objects
@@ -724,7 +758,7 @@ int main()
 		// 1. render depth of scene to texture (from light's perspective)
 		glm::mat4 lightProjection, lightView;
 		glm::mat4 lightSpaceMatrix;
-		float near_plane = 1.0f, far_plane = 7.5f;
+		float near_plane = 1.0f, far_plane = 20.5f;
 		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
 		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
@@ -767,6 +801,15 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		glDisable(GL_CULL_FACE);
 		renderScene(shadowMappingShader);
+
+		// render Depth map to quad for visual debugging
+		// ---------------------------------------------
+		/*debugQuad.use();
+		debugQuad.setFloat("near_plane", near_plane);
+		debugQuad.setFloat("far_plane", far_plane);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+		renderQuad();*/
 
 		{
 			// draw skybox
