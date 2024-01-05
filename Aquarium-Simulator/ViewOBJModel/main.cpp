@@ -524,6 +524,8 @@ float fishRotationIncrement = 1.0f;
 //declare model
 Model fishObjModel;
 Model coralObjModel;
+Model starFishModel;
+Model starFishModelGlass;
 Model fish2ObjModel;
 Model coral2ObjModel;
 Model diverObjModel;
@@ -567,6 +569,15 @@ void renderScene(Shader& shader){
 	model = glm::scale(model, glm::vec3(0.03f));
 	shader.setMat4("model", model);
 	coralObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, 4.3f));
+	shader.setMat4("model", model);
+	starFishModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(19.88f, 2.0f, 4.3f));
+	model = glm::scale(model, glm::vec3(0.5f));
+	shader.setMat4("model", model);
+	starFishModelGlass.Draw(shader);
 
 	model = glm::translate(glm::mat4(1.0f), glm::vec3(16.0f, 2.5f, 3.3f));
 	model = glm::scale(model, glm::vec3(0.1f));
@@ -712,6 +723,12 @@ int main()
 
 	std::string coralObjFileName = (currentPath + "\\Models\\Coral\\10010_Coral_v1_L3.obj");
 	coralObjModel = Model(coralObjFileName, false);
+
+	std::string starFishFileName = (currentPath + "\\Models\\StarFish\\MPS0HO5HRW7HPKO72X12940HW.obj");
+	starFishModel = Model(starFishFileName, false);
+
+	std::string starFishGlassFileName = (currentPath + "\\Models\\StarFishGlass\\O5T6WV158SFXN8YLU5HYHWW1Q.obj");
+	starFishModelGlass = Model(starFishGlassFileName, false);
 
 	std::string coral2ObjFileName = (currentPath + "\\Models\\coral1\\20941_Brain_Coral_v1_NEW1.obj");
 	coral2ObjModel = Model(coral2ObjFileName, false);
