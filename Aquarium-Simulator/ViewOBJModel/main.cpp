@@ -533,6 +533,9 @@ Model skullObjModel;
 Model castleObjModel;
 Model turtleObjModel;
 Model treasureObjModel;
+Model fish4ObjModel;
+Model fish7ObjModel;
+Model fish8ObjModel;
 
 float incrementMoveSpeed = 0.01;
 float incrementRotationSpeed = 0.4;
@@ -616,6 +619,30 @@ void renderScene(Shader& shader){
 	model = glm::scale(model, glm::vec3(0.05f));
 	shader.setMat4("model", model);
 	treasureObjModel.Draw(shader);
+
+	fish4ObjModel.moveObject(incrementMoveSpeed, incrementRotationSpeed);
+	model = glm::translate(glm::mat4(1.0f), fish4ObjModel.currentPos);
+	model = glm::scale(model, glm::vec3(0.08f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(fish4ObjModel.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	shader.setMat4("model", model);
+	fish4ObjModel.Draw(shader);
+
+	fish7ObjModel.moveObject(incrementMoveSpeed, incrementRotationSpeed);
+	model = glm::translate(glm::mat4(1.0f), fish7ObjModel.currentPos);
+	model = glm::scale(model, glm::vec3(0.3f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(fish7ObjModel.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	shader.setMat4("model", model);
+	fish7ObjModel.Draw(shader);
+
+	fish8ObjModel.moveObject(incrementMoveSpeed, incrementRotationSpeed);
+	model = glm::translate(glm::mat4(1.0f), fish8ObjModel.currentPos);
+	model = glm::scale(model, glm::vec3(0.08f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(fish8ObjModel.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	shader.setMat4("model", model);
+	fish8ObjModel.Draw(shader);
 }
 
 
@@ -758,6 +785,18 @@ int main()
 
 	std::string treasureObjFileName = (currentPath + "\\Models\\treasure\\13019_aquarium_treasure_chest_v1_L2.obj");
 	treasureObjModel = Model(treasureObjFileName, false);
+
+	std::string fish4ObjFileName = (currentPath + "\\Models\\fish3\\13001_Ryukin_Goldfish_v1_L3.obj");
+	fish4ObjModel = Model(fish4ObjFileName, false);
+	fish4ObjModel.setPos(glm::vec3(11.0f, 1.3f, 4.7f), glm::vec3(18.9f, 0.3f, 0.2f), 0.0f);
+
+	std::string fish7ObjFileName = (currentPath + "\\Models\\fish7\\13009_Coral_Beauty_Angelfish_v1_l3.obj");
+	fish7ObjModel = Model(fish7ObjFileName, false);
+	fish7ObjModel.setPos(glm::vec3(16.9f, 0.5f, 4.7f), glm::vec3(16.9f, 0.4f, 0.4f), 180.0f);
+
+	std::string fish8ObjFileName = (currentPath + "\\Models\\fish8\\12990_Black_Moor_Goldfish_v1_l2.obj");
+	fish8ObjModel = Model(fish8ObjFileName, false);
+	fish8ObjModel.setPos(glm::vec3(1.9f, 2.8f, 0.4f), glm::vec3(2.3f, 2.8f, 4.6f), 270.0f);
 
 
 	//load skybox
