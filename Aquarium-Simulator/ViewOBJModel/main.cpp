@@ -485,13 +485,13 @@ void renderFloor()
 		// set up vertex data (and buffer(s)) and configure vertex attributes
 		float planeVertices[] = {
 			// positions            // normals         // texcoords
-			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  20.0f,  0.0f,
+			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  12.0f,  0.0f,
 			20.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 20.0f,
+			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 5.0f,
 
-			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  20.0f,  0.0f,
-			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 20.0f,
-			0.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,  20.0f, 20.0f
+			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  12.0f,  0.0f,
+			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 5.0f,
+			0.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,  12.0f, 5.0f
 		};
 		// plane VAO
 		unsigned int planeVBO;
@@ -524,6 +524,8 @@ float fishRotationIncrement = 1.0f;
 //declare model
 Model fishObjModel;
 Model coralObjModel;
+Model starFishModel;
+Model starFishModelGlass;
 
 void renderScene(Shader& shader){
 	//test draw floor
@@ -563,6 +565,15 @@ void renderScene(Shader& shader){
 	model = glm::scale(model, glm::vec3(0.03f));
 	shader.setMat4("model", model);
 	coralObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, 4.3f));
+	shader.setMat4("model", model);
+	starFishModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(19.88f, 2.0f, 4.3f));
+	model = glm::scale(model, glm::vec3(0.5f));
+	shader.setMat4("model", model);
+	starFishModelGlass.Draw(shader);
 }
 
 
@@ -667,7 +678,7 @@ int main()
 
 	//load aquarium texture
 	//unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\ps-neutral.png").c_str());
-	unsigned int floorTexture = CreateTexture((currentPath + "\\Textures\\ColoredFloor.png").c_str());
+	unsigned int floorTexture = CreateTexture((currentPath + "\\Textures\\gravel.png").c_str());
 
 	//*********************************
 	//model loading
@@ -677,6 +688,12 @@ int main()
 
 	std::string coralObjFileName = (currentPath + "\\Models\\Coral\\10010_Coral_v1_L3.obj");
 	coralObjModel = Model(coralObjFileName, false);
+
+	std::string starFishFileName = (currentPath + "\\Models\\StarFish\\MPS0HO5HRW7HPKO72X12940HW.obj");
+	starFishModel = Model(starFishFileName, false);
+
+	std::string starFishGlassFileName = (currentPath + "\\Models\\StarFishGlass\\O5T6WV158SFXN8YLU5HYHWW1Q.obj");
+	starFishModelGlass = Model(starFishGlassFileName, false);
 
 	//load skybox
 	vector<std::string> faces
