@@ -532,8 +532,10 @@ Model fish5ObjModel;
 Model fish4ObjModel;
 Model fish7ObjModel;
 Model fish8ObjModel;
+Model ShellObjModel;
+Model SeaWeedObjModel;
 
-float incrementMoveSpeed = 0.02;
+float incrementMoveSpeed = 0.004;
 float incrementRotationSpeed = 0.4;
 
 void renderScene(Shader& shader){
@@ -648,6 +650,28 @@ void renderScene(Shader& shader){
 	model = glm::rotate(model, glm::radians(fish8ObjModel.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 	shader.setMat4("model", model);
 	fish8ObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 5.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(134.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.06f));
+	shader.setMat4("model", model);
+	ShellObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(17.0f, 0.0f, 4.5f));
+	//model = glm::rotate(model, glm::radians(134.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.03f));
+	shader.setMat4("model", model);
+	SeaWeedObjModel.Draw(shader);
+
+	model = glm::translate(model, glm::vec3(15.38f, 0.0f, 3.4f));
+	shader.setMat4("model", model);
+	SeaWeedObjModel.Draw(shader);
+
+	model = glm::translate(model, glm::vec3(18.5f, 0.0f, 3.2f));
+	shader.setMat4("model", model);
+	SeaWeedObjModel.Draw(shader);
 }
 
 
@@ -802,11 +826,18 @@ int main()
 
 	std::string fish7ObjFileName = (currentPath + "\\Models\\fish7\\13009_Coral_Beauty_Angelfish_v1_l3.obj");
 	fish7ObjModel = Model(fish7ObjFileName, false);
-	fish7ObjModel.setPos(glm::vec3(16.9f, 0.5f, 4.7f), glm::vec3(16.9f, 0.4f, 0.4f), 180.0f);
+	fish7ObjModel.setPos(glm::vec3(16.9f, 0.5f, 4.7f), glm::vec3(16.9f, 0.4f, 1.4f), 180.0f);
 
 	std::string fish8ObjFileName = (currentPath + "\\Models\\fish8\\12990_Black_Moor_Goldfish_v1_l2.obj");
 	fish8ObjModel = Model(fish8ObjFileName, false);
 	fish8ObjModel.setPos(glm::vec3(1.9f, 2.8f, 0.4f), glm::vec3(2.3f, 2.8f, 4.6f), 270.0f);
+
+	std::string ShellFileName = (currentPath + "\\Models\\Shell\\model.obj");
+	ShellObjModel = Model(ShellFileName, false);
+
+	std::string SeaWeedFileName = (currentPath + "\\Models\\SeaWeed\\model.obj");
+	SeaWeedObjModel = Model(SeaWeedFileName, false);
+	
 
 
 	//load skybox
@@ -861,7 +892,7 @@ int main()
 
 	// lighting info
    // -------------
-	glm::vec3 lightPos(14.0f, 5.0f, 2.5f);
+	glm::vec3 lightPos(16.0f, 4.0f, 2.5f);
 
 	glEnable(GL_CULL_FACE);
 
