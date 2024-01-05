@@ -7,6 +7,6 @@ uniform sampler2D texture1;
 
 void main()
 {
-    vec4 lightBlueColor = vec4(0.678, 0.847, 0.902, 0.3); // RGB values for light blue
+    vec4 lightBlueColor = vec4(0.133, 0.424, 1, 0.2); // RGB values for light blue
     FragColor = lightBlueColor;
 }

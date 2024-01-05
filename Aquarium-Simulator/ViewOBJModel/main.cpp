@@ -362,6 +362,18 @@ unsigned int loadCubemap(vector<std::string> faces)
 	return textureID;
 }
 
+std::string returnCurentPath() {
+	wchar_t buffer[MAX_PATH];
+	GetCurrentDirectoryW(MAX_PATH, buffer);
+
+	std::wstring executablePath(buffer);
+	std::wstring wscurrentPath = executablePath.substr(0, executablePath.find_last_of(L"\\/"));
+
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::string currentPath = converter.to_bytes(wscurrentPath);
+	return currentPath;
+}
+
 unsigned int CreateTexture(const std::string& strTexturePath)
 {
 	unsigned int textureId = -1;
@@ -371,7 +383,7 @@ unsigned int CreateTexture(const std::string& strTexturePath)
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
 	unsigned char* data = stbi_load(strTexturePath.c_str(), &width, &height, &nrChannels, 0);
 	if (data) {
-		GLenum format = 4;
+		GLenum format;
 		if (nrChannels == 1)
 			format = GL_RED;
 		else if (nrChannels == 3)
@@ -400,10 +412,104 @@ unsigned int CreateTexture(const std::string& strTexturePath)
 	return textureId;
 }
 
+std::string currentPath = returnCurentPath();
+
+unsigned int planeVAO = 0;
+void renderFloor()
+{
+	unsigned int planeVBO;
+
+	if (planeVAO == 0) {
+		// set up vertex data (and buffer(s)) and configure vertex attributes
+		float planeVertices[] = {
+			// positions            // normals         // texcoords
+			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+
+			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+			-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+		};
+		// plane VAO
+		unsigned int planeVBO;
+		glGenVertexArrays(1, &planeVAO);
+		glGenBuffers(1, &planeVBO);
+		glBindVertexArray(planeVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glBindVertexArray(0);
+	}
+
+	glBindVertexArray(planeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+
+
+glm::vec3 fishPos(0.0f, 0.0f, 0.0f);
+float fishIncrement = -0.005f;
+float fishRotation = 0.0f;
+float fishRotationIncrement = 1.0f;
+
+//declare model
+Model fishObjModel;
+Model coralObjModel;
+
+void renderScene(Shader& shader){
+	//test draw floor
+	{
+		glm::mat4 model{ glm::mat4(1.0f) };
+		model = glm::translate(model, glm::vec3(0.0f));
+		shader.setMat4("model", model);
+		renderFloor();
+	}
+	
+
+	//change fish poz
+	fishPos.x += fishIncrement;
+	if (abs(fishPos.x) >= 4.0f) {
+		fishRotation += fishRotationIncrement;
+		fishIncrement = 0;
+		if (fishRotation <= 0.0f || fishRotation >= 180.0f) {
+			fishRotationIncrement *= -1.0f;
+			if (fishRotationIncrement < 0)
+				fishIncrement = 0.005f;
+			else
+				fishIncrement = -0.005f;
+		}
+	}
+
+	glm::mat4 model{ glm::mat4(1.0f) };
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(6.0f, 1.0f, 3.3f) + fishPos);
+	model = glm::scale(model, glm::vec3(0.03f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(fishRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	shader.setMat4("model", model);
+	fishObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 3.3f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.03f));
+	shader.setMat4("model", model);
+	coralObjModel.Draw(shader);
+}
+
+
+
 int main()
 {
 	// glfw: initialize and configure
 	glfwInit();
+	glfwWindowHint(GLFW_DEPTH_BITS, 32);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -488,32 +594,26 @@ int main()
 	glEnableVertexAttribArray(0);
 
 	// Create camera
-	pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0, 0.0, 3.0));
+	pCamera = new Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(10.0f, 3.0f, 10.0f));
 
-	glm::vec3 lightPos(0.0f, 2.0f, 1.0f);
-
-	glm::vec3 fishPos(0.0f, 0.0f, 0.0f);
-	float fishIncrement = -0.01f;
-	float lastFishIncrement;
-	float fishRotation = 0.0f;
-	float fishRotationIncrement = 0.4f;
-
-	wchar_t buffer[MAX_PATH];
-	GetCurrentDirectoryW(MAX_PATH, buffer);
-
-	std::wstring executablePath(buffer);
-	std::wstring wscurrentPath = executablePath.substr(0, executablePath.find_last_of(L"\\/"));
-
-	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-	std::string currentPath = converter.to_bytes(wscurrentPath);
-
-	Shader lightingShader((currentPath + "\\Shaders\\PhongLight.vs").c_str(), (currentPath + "\\Shaders\\PhongLight.fs").c_str());
+	Shader shadowMappingShader((currentPath + "\\Shaders\\ShadowMapping.vs").c_str(), (currentPath + "\\Shaders\\ShadowMapping.fs").c_str());
+	Shader shadowMappingDepthShader((currentPath + "\\Shaders\\ShadowMappingDepth.vs").c_str(), (currentPath + "\\Shaders\\ShadowMappingDepth.fs").c_str());
 	Shader lampShader((currentPath + "\\Shaders\\Lamp.vs").c_str(), (currentPath + "\\Shaders\\Lamp.fs").c_str());
 	Shader windowShader((currentPath + "\\Shaders\\Blending.vs").c_str(), (currentPath + "\\Shaders\\Blending.fs").c_str());
 	Shader skyboxShader((currentPath + "\\Shaders\\Skybox.vs").c_str(), (currentPath + "\\Shaders\\Skybox.fs").c_str());
 
 	//load aquarium texture
-	unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\ps-neutral.png").c_str());
+	//unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\ps-neutral.png").c_str());
+	unsigned int floorTexture = CreateTexture((currentPath + "\\Textures\\ColoredFloor.png").c_str());
+
+	//*********************************
+	//model loading
+	// --------------------
+	std::string fishObjFileName = (currentPath + "\\Models\\Fish\\12265_Fish_v1_L2.obj");
+	fishObjModel = Model(fishObjFileName, false);
+
+	std::string coralObjFileName = (currentPath + "\\Models\\Coral\\10010_Coral_v1_L3.obj");
+	coralObjModel = Model(coralObjFileName, false);
 
 	//load skybox
 	vector<std::string> faces
@@ -527,6 +627,30 @@ int main()
 	};
 	unsigned int cubemapTexture = loadCubemap(faces);
 
+	// configure depth map FBO
+	// -----------------------
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	unsigned int depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+	// create depth texture
+	unsigned int depthMap;
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 	// shader configuration
     // --------------------
 	windowShader.use();
@@ -535,10 +659,19 @@ int main()
 	skyboxShader.use();
 	skyboxShader.setInt("skybox", 0);
 
-	//model loading
-	// --------------------
-	std::string fishObjFileName = (currentPath + "\\Models\\Fish\\12265_Fish_v1_L2.obj");
-	Model fishObjModel(fishObjFileName, false);
+	shadowMappingShader.use();
+	shadowMappingShader.setInt("diffuseTexture", 0);
+	shadowMappingShader.setInt("shadowMap", 1);
+
+	
+
+	// lighting info
+   // -------------
+	glm::vec3 lightPos(10.0f, 5.0f, 2.5f);
+
+	glEnable(GL_CULL_FACE);
+
+	
 
 	//transparent objects location
 	vector<TransparentObj> transparentObjects;
@@ -571,8 +704,10 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		lightPos.x = 0.5 * cos(glfwGetTime());
-		lightPos.z = 0.5 * sin(glfwGetTime());
+		// change light position over time
+		lightPos.x = sin(glfwGetTime()) * 0.00000000000000001f;
+		lightPos.z = cos(glfwGetTime()) * 0.00000000000000001f;
+		//lightPos.y = 5.0 + cos(glfwGetTime()) * 1.0f;
 
 		//sort transparent objects
 		std::map<float, TransparentObj*> sortedMap;
@@ -581,51 +716,57 @@ int main()
 			sortedMap[distance] = &(transparentObjects[i]);
 		}
 
-		//change fish poz
-		fishPos.x += fishIncrement;
-		if (abs(fishPos.x) >= 4.0f) {
-			fishRotation += fishRotationIncrement;
-			fishIncrement = 0;
-			if (fishRotation <= 0.0f || fishRotation >= 180.0f) {
-				fishRotationIncrement *= -1.0f;
-				if (fishRotationIncrement < 0)
-					fishIncrement = 0.01f;
-				else
-					fishIncrement = -0.01f;
-			}
-		}
-
+		
+		//render
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		lightingShader.use();
-		lightingShader.SetVec3("objectColor", 0.5f, 1.0f, 0.31f);
-		lightingShader.SetVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		lightingShader.SetVec3("lightPos", lightPos);
-		lightingShader.SetVec3("viewPos", pCamera->GetPosition());
+		// 1. render depth of scene to texture (from light's perspective)
+		glm::mat4 lightProjection, lightView;
+		glm::mat4 lightSpaceMatrix;
+		float near_plane = 1.0f, far_plane = 7.5f;
+		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
-		lightingShader.setMat4("projection", pCamera->GetProjectionMatrix());
-		lightingShader.setMat4("view", pCamera->GetViewMatrix());
+		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+		lightSpaceMatrix = lightProjection * lightView;
 
-		// render the model
-		// --------------------
-		//glm::mat4 model = glm::scale(glm::mat4(1.0), glm::vec3(0.001f));
-		//lightingShader.setMat4("model", model);
-		//objModel.Draw(lightingShader);
+		// render scene from light's point of view
+		shadowMappingDepthShader.use();
+		shadowMappingDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
-		//draw fish
-		/*glm::mat4 fishModel = glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
-		fishModel = glm::rotate(fishModel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		lightingShader.setMat4("model", fishModel);
-		fishObjModel.Draw(lightingShader);*/
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, floorTexture);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		renderScene(shadowMappingDepthShader);
+		glCullFace(GL_BACK);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		glm::mat4 fishModel = glm::translate(glm::mat4(1.0), glm::vec3(6.0f, 0.0f, 3.3f) + fishPos);
-		fishModel = glm::scale(fishModel, glm::vec3(0.03f));
-		fishModel = glm::rotate(fishModel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		fishModel = glm::rotate(fishModel, glm::radians(fishRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+		// reset viewport
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// render the scene
+		// 2. render scene as normal using the generated depth/shadow map 
 		
-		lightingShader.setMat4("model", fishModel);
-		fishObjModel.Draw(lightingShader);
+		shadowMappingShader.use();
+		glm::mat4 projection = pCamera->GetProjectionMatrix();
+		glm::mat4 view = pCamera->GetViewMatrix();
+		shadowMappingShader.setMat4("projection", projection);
+		shadowMappingShader.setMat4("view", view);
+		// set light uniforms
+		shadowMappingShader.SetVec3("viewPos", pCamera->GetPosition());
+		shadowMappingShader.SetVec3("lightPos", lightPos);
+		shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, floorTexture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+		glDisable(GL_CULL_FACE);
+		renderScene(shadowMappingShader);
 
 		{
 			// draw skybox
@@ -645,10 +786,10 @@ int main()
 		}
 		
 		//draw transparent obj
-		glBindTexture(GL_TEXTURE_2D, windowTexture);
+		//glBindTexture(GL_TEXTURE_2D, windowTexture);
 		windowShader.use();
-		glm::mat4 projection = pCamera->GetProjectionMatrix();
-		glm::mat4 view = pCamera->GetViewMatrix();
+		projection = pCamera->GetProjectionMatrix();
+		view = pCamera->GetViewMatrix();
 		windowShader.setMat4("projection", projection);
 		windowShader.setMat4("view", view);
 
