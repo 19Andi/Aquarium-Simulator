@@ -530,6 +530,9 @@ Model fish2ObjModel;
 Model coral2ObjModel;
 Model diverObjModel;
 Model skullObjModel;
+Model castleObjModel;
+Model turtleObjModel;
+Model treasureObjModel;
 
 void renderScene(Shader& shader){
 	//test draw floor
@@ -606,6 +609,25 @@ void renderScene(Shader& shader){
 	model = glm::scale(model, glm::vec3(0.1f));
 	shader.setMat4("model", model);
 	skullObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(13.0f, 0.0f, 2.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.16f));
+	shader.setMat4("model", model);
+	castleObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 2.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.1f));
+	shader.setMat4("model", model);
+	turtleObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.7f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.05f));
+	shader.setMat4("model", model);
+	treasureObjModel.Draw(shader);
 }
 
 
@@ -738,6 +760,16 @@ int main()
 
 	std::string skullObjFileName = (currentPath + "\\Models\\skull\\13022_Aquarium_Skull_v1_L1.obj");
 	skullObjModel = Model(skullObjFileName, false);
+
+	std::string castleObjFileName = (currentPath + "\\Models\\Castle\\13020_Aquarium_Castle_v1_L1.obj");
+	castleObjModel = Model(castleObjFileName, false);
+
+	std::string turtleObjFileName = (currentPath + "\\Models\\Turtle\\20446_Sea_Turtle_v1 Textured.obj");
+    turtleObjModel= Model(turtleObjFileName, false);
+
+	std::string treasureObjFileName = (currentPath + "\\Models\\treasure\\13019_aquarium_treasure_chest_v1_L2.obj");
+	treasureObjModel = Model(treasureObjFileName, false);
+
 
 	//load skybox
 	vector<std::string> faces
