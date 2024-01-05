@@ -485,13 +485,13 @@ void renderFloor()
 		// set up vertex data (and buffer(s)) and configure vertex attributes
 		float planeVertices[] = {
 			// positions            // normals         // texcoords
-			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  20.0f,  0.0f,
+			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  12.0f,  0.0f,
 			20.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 20.0f,
+			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 5.0f,
 
-			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  20.0f,  0.0f,
-			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 20.0f,
-			0.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,  20.0f, 20.0f
+			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  12.0f,  0.0f,
+			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 5.0f,
+			0.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,  12.0f, 5.0f
 		};
 		// plane VAO
 		unsigned int planeVBO;
@@ -524,6 +524,10 @@ float fishRotationIncrement = 1.0f;
 //declare model
 Model fishObjModel;
 Model coralObjModel;
+Model fish2ObjModel;
+Model coral2ObjModel;
+Model diverObjModel;
+Model skullObjModel;
 
 void renderScene(Shader& shader){
 	//test draw floor
@@ -563,6 +567,34 @@ void renderScene(Shader& shader){
 	model = glm::scale(model, glm::vec3(0.03f));
 	shader.setMat4("model", model);
 	coralObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(16.0f, 2.5f, 3.3f));
+	model = glm::scale(model, glm::vec3(0.1f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(fishRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	shader.setMat4("model", model);
+	fish2ObjModel.Draw(shader); 
+	
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 0.0f, 0.65f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.06f));
+	shader.setMat4("model", model);
+	coral2ObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(14.0f, 0.0f, 5.5f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.11f));
+	shader.setMat4("model", model);
+	diverObjModel.Draw(shader);
+
+	model = glm::translate(glm::mat4(1.0f), glm::vec3(19.4f, 0.0f, 0.5f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.1f));
+	shader.setMat4("model", model);
+	skullObjModel.Draw(shader);
 }
 
 
@@ -667,7 +699,7 @@ int main()
 
 	//load aquarium texture
 	//unsigned int windowTexture = CreateTexture((currentPath + "\\Textures\\ps-neutral.png").c_str());
-	unsigned int floorTexture = CreateTexture((currentPath + "\\Textures\\ColoredFloor.png").c_str());
+	unsigned int floorTexture = CreateTexture((currentPath + "\\Textures\\gravel.png").c_str());
 
 	//*********************************
 	//model loading
@@ -675,8 +707,20 @@ int main()
 	std::string fishObjFileName = (currentPath + "\\Models\\Fish\\12265_Fish_v1_L2.obj");
 	fishObjModel = Model(fishObjFileName, false);
 
+	std::string fish2ObjFileName = (currentPath + "\\Models\\fish2\\13007_Blue-Green_Reef_Chromis_v2_l3.obj");
+	fish2ObjModel = Model(fish2ObjFileName, false);
+
 	std::string coralObjFileName = (currentPath + "\\Models\\Coral\\10010_Coral_v1_L3.obj");
 	coralObjModel = Model(coralObjFileName, false);
+
+	std::string coral2ObjFileName = (currentPath + "\\Models\\coral1\\20941_Brain_Coral_v1_NEW1.obj");
+	coral2ObjModel = Model(coral2ObjFileName, false);
+
+	std::string diverObjFileName = (currentPath + "\\Models\\diver\\13018_Aquarium_Deep_Sea_Diver_v1_L1.obj");
+	diverObjModel = Model(diverObjFileName, false);
+
+	std::string skullObjFileName = (currentPath + "\\Models\\skull\\13022_Aquarium_Skull_v1_L1.obj");
+	skullObjModel = Model(skullObjFileName, false);
 
 	//load skybox
 	vector<std::string> faces
