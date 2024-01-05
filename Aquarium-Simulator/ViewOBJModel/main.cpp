@@ -31,8 +31,8 @@
 #pragma comment (lib, "OpenGL32.lib")
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1200;
+const unsigned int SCR_HEIGHT = 800;
 
 enum ECameraMovementType
 {
@@ -516,11 +516,6 @@ void renderFloor()
 
 
 
-glm::vec3 fishPos(0.0f, 0.0f, 0.0f);
-float fishIncrement = -0.005f;
-float fishRotation = 0.0f;
-float fishRotationIncrement = 1.0f;
-
 //declare model
 Model fishObjModel;
 Model coralObjModel;
@@ -533,8 +528,9 @@ Model skullObjModel;
 Model castleObjModel;
 Model turtleObjModel;
 Model treasureObjModel;
+Model fish5ObjModel;
 
-float incrementMoveSpeed = 0.01;
+float incrementMoveSpeed = 0.02;
 float incrementRotationSpeed = 0.4;
 
 void renderScene(Shader& shader){
@@ -570,12 +566,21 @@ void renderScene(Shader& shader){
 	shader.setMat4("model", model);
 	starFishModelGlass.Draw(shader);
 
-	model = glm::translate(glm::mat4(1.0f), glm::vec3(16.0f, 2.5f, 3.3f));
+	fish2ObjModel.moveObject(incrementMoveSpeed, incrementRotationSpeed);
+	model = glm::translate(glm::mat4(1.0f), fish2ObjModel.currentPos);
 	model = glm::scale(model, glm::vec3(0.1f));
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(fishRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(fish2ObjModel.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 	shader.setMat4("model", model);
 	fish2ObjModel.Draw(shader); 
+
+	fish5ObjModel.moveObject(incrementMoveSpeed, incrementRotationSpeed);
+	model = glm::translate(glm::mat4(1.0f), fish5ObjModel.currentPos);
+	model = glm::scale(model, glm::vec3(0.1f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(fish5ObjModel.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	shader.setMat4("model", model);
+	fish5ObjModel.Draw(shader);
 	
 	model = glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 0.0f, 0.65f));
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -727,10 +732,15 @@ int main()
 	// --------------------
 	std::string fishObjFileName = (currentPath + "\\Models\\Fish\\12265_Fish_v1_L2.obj");
 	fishObjModel = Model(fishObjFileName, false);
-	fishObjModel.setPos(glm::vec3(6.0f, 1.0f, 3.3f), glm::vec3(10.0f, 4.0f, 1.3f), 180.0f);
+	fishObjModel.setPos(glm::vec3(2.0f, 1.0f, 3.3f), glm::vec3(12.0f, 2.0f, 2.0f), 180.0f);
 
 	std::string fish2ObjFileName = (currentPath + "\\Models\\fish2\\13007_Blue-Green_Reef_Chromis_v2_l3.obj");
 	fish2ObjModel = Model(fish2ObjFileName, false);
+	fish2ObjModel.setPos(glm::vec3(1.0f, 3.0f, 3.0f), glm::vec3(15.0f, 2.5f, 1.8f), 90.0f);
+
+	std::string fish5ObjFileName = (currentPath + "\\Models\\fish5\\12999_Boesemani_Rainbow_v1_l2.obj");
+	fish5ObjModel = Model(fish5ObjFileName, false);
+	fish5ObjModel.setPos(glm::vec3(1.0f, 1.0f, 4.5f), glm::vec3(18.0f, 2.5f, 4.5f), 180.0f);
 
 	std::string coralObjFileName = (currentPath + "\\Models\\Coral\\10010_Coral_v1_L3.obj");
 	coralObjModel = Model(coralObjFileName, false);
@@ -821,8 +831,9 @@ int main()
 	//transparent objects location
 	vector<TransparentObj> transparentObjects;
 	const float aquariumLength = 20.0f;
-	const float aquariumWidth = 6.0f;
 	const float aquariumHeight = 5.0f;
+	const float aquariumWidth = 6.0f;
+	
 
 	for (float i = 0.0f; i < aquariumLength; i += 1.0f) {
 		for (float j = 0.0f; j < aquariumHeight; j += 1.0f) {
@@ -879,7 +890,7 @@ int main()
 		float near_plane = 1.0f, far_plane = 20.5f;
 		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
-		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+		lightView = glm::lookAt(lightPos, glm::vec3(10.0f,0.0f,4.0f), glm::vec3(0.0, 1.0, 0.0));
 		lightSpaceMatrix = lightProjection * lightView;
 
 		// render scene from light's point of view
