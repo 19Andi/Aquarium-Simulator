@@ -301,18 +301,17 @@ void renderQuad()
 
 unsigned int transparentRectVAO = 0; 
 unsigned int transparentRectVBO = 0;
-glm::vec3 rectCenter(5.0f, 0.0f, 0.0f);
 void drawRect() {
 	if (transparentRectVAO == 0) {
 		float transparentVertices[] = {
 			// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
-			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-			0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-			1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+			0.0f,  0.5f,  0.0f,
+			0.0f, -0.5f,  0.0f,
+			1.0f, -0.5f,  0.0f,
 
-			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-			1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-			1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+			0.0f,  0.5f,  0.0f,
+			1.0f, -0.5f,  0.0f,
+			1.0f,  0.5f,  0.0f
 		};
 
 		glGenVertexArrays(1, &transparentRectVAO);
@@ -321,9 +320,9 @@ void drawRect() {
 		glBindBuffer(GL_ARRAY_BUFFER, transparentRectVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		/*glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
 		glBindVertexArray(0);
 	}
 	//draw aquarium
@@ -334,18 +333,17 @@ void drawRect() {
 
 unsigned int transparentSquareVAO = 0;
 unsigned int transparentSquareRectVBO = 0;
-glm::vec3 squareCenter(0.0f, 0.0f, 0.5f);
 void drawSquare() {
 	if (transparentSquareVAO == 0) {
 		float transparentVertices[] = {
 			// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
-			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-			0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-			0.0f, -0.5f,  1.0f,  1.0f,  1.0f,
+			0.0f,  0.5f,  0.0f,
+			0.0f, -0.5f,  0.0f,
+			0.0f, -0.5f,  1.0f,
 
-			0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-			0.0f, -0.5f,  1.0f,  1.0f,  1.0f,
-			0.0f,  0.5f,  1.0f,  1.0f,  0.0f
+			0.0f,  0.5f,  0.0f,
+			0.0f, -0.5f,  1.0f,
+			0.0f,  0.5f,  1.0f
 		};
 
 		glGenVertexArrays(1, &transparentSquareVAO);
@@ -354,13 +352,44 @@ void drawSquare() {
 		glBindBuffer(GL_ARRAY_BUFFER, transparentSquareRectVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		/*glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
 		glBindVertexArray(0);
 	}
 	//draw aquarium
 	glBindVertexArray(transparentSquareVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+unsigned int transparentCeilingVAO = 0;
+unsigned int transparentCeilingVBO = 0;
+void drawCeiling() {
+	if (transparentCeilingVAO == 0) {
+		float transparentVertices[] = {
+			// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+			0.0f, 0.0f,  0.0f,
+			1.0f, 0.0f,  0.0f,
+			1.0f, 0.0f, 1.0f,
+
+			0.0f, 0.0f,  0.0f,
+			1.0f, 0.0f, 1.0f,
+			0.0f, 0.0f, 1.0f
+		};
+		glGenVertexArrays(1, &transparentCeilingVAO);
+		glGenBuffers(1, &transparentCeilingVBO);
+		glBindVertexArray(transparentCeilingVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, transparentCeilingVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		/*glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
+		glBindVertexArray(0);
+	}
+	//draw aquarium
+	glBindVertexArray(transparentCeilingVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
@@ -456,13 +485,13 @@ void renderFloor()
 		// set up vertex data (and buffer(s)) and configure vertex attributes
 		float planeVertices[] = {
 			// positions            // normals         // texcoords
-			25.0f, 0.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, 0.0f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-			-25.0f, 0.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  20.0f,  0.0f,
+			20.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 20.0f,
 
-			25.0f, 0.0f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-			-25.0f, 0.0f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-			25.0f, 0.0f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+			0.0f, 0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  20.0f,  0.0f,
+			20.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,   0.0f, 20.0f,
+			0.0f, 0.0f, 6.0f,  0.0f, 1.0f, 0.0f,  20.0f, 20.0f
 		};
 		// plane VAO
 		unsigned int planeVBO;
@@ -710,21 +739,28 @@ int main()
 	//transparent objects location
 	vector<TransparentObj> transparentObjects;
 	const float aquariumLength = 20.0f;
-	const float aquariumWidth = 5.0f;
+	const float aquariumWidth = 6.0f;
 	const float aquariumHeight = 5.0f;
 
 	for (float i = 0.0f; i < aquariumLength; i += 1.0f) {
-		for (uint8_t j = 0.0f; j < aquariumHeight; j += 1.0f) {
+		for (float j = 0.0f; j < aquariumHeight; j += 1.0f) {
 			transparentObjects.push_back(TransparentObj(glm::vec3(i, j, -0.0001f), TransparentObj::Type::GLASS, TransparentObj::WindowType::RECT));
 			transparentObjects.push_back(TransparentObj(glm::vec3(i, j, aquariumWidth), TransparentObj::Type::GLASS, TransparentObj::WindowType::RECT));
 		}
 	}
 	for (float i = 0.0f; i < aquariumWidth; i += 1.0f) {
-		for (uint8_t j = 0.0f; j < aquariumHeight; j += 1.0f) {
-			transparentObjects.push_back(TransparentObj(glm::vec3(0.0f, j, i), TransparentObj::Type::GLASS, TransparentObj::WindowType::SQUARE));
+		for (float j = 0.0f; j < aquariumHeight; j += 1.0f) {
+			transparentObjects.push_back(TransparentObj(glm::vec3(-0.0001f, j, i), TransparentObj::Type::GLASS, TransparentObj::WindowType::SQUARE));
 			transparentObjects.push_back(TransparentObj(glm::vec3(aquariumLength, j, i), TransparentObj::Type::GLASS, TransparentObj::WindowType::SQUARE));
 		}
 	}
+	for (float i = 0.0f; i < aquariumLength; i += 1.0f) {
+		for (float j = 0.0f; j < aquariumWidth; j += 1.0f) {
+			transparentObjects.push_back(TransparentObj(glm::vec3(i, aquariumHeight - 1.5f, j), TransparentObj::Type::GLASS, TransparentObj::WindowType::CEILING));
+		}
+	}
+	
+
 	// render loop
 	while (!glfwWindowShouldClose(window)) {
 		// per-frame time logic
@@ -744,10 +780,10 @@ int main()
 		//lightPos.y = 5.0 + cos(glfwGetTime()) * 1.0f;
 
 		//sort transparent objects
-		std::map<float, TransparentObj*> sortedMap;
-		for (uint8_t i = 0; i < transparentObjects.size(); i++) {
-			float distance = glm::length(pCamera->GetPosition() - transparentObjects[i].pos);
-			sortedMap[distance] = &(transparentObjects[i]);
+		std::multimap<float, TransparentObj*> sortedMap;
+		for (int i = 0; i < transparentObjects.size(); i++) {
+ 			float distance = glm::length(pCamera->GetPosition() - transparentObjects[i].pos);
+			sortedMap.insert(std::make_pair(distance, &(transparentObjects[i])));
 		}
 
 		
@@ -837,17 +873,31 @@ int main()
 		windowShader.setMat4("view", view);
 
 		//furthest object is drawn first
-		for (std::map<float, TransparentObj*>::reverse_iterator it = sortedMap.rbegin(); it != sortedMap.rend(); ++it)
+		for (std::multimap<float, TransparentObj*>::reverse_iterator it = sortedMap.rbegin(); it != sortedMap.rend(); ++it)
 		{
 			if (it->second->type == TransparentObj::Type::GLASS) {
 				glm::mat4 model = glm::mat4(1.0f);
+				glm::vec4 color(0.133f, 0.424f, 1.0f, 0.2f); //default aquarium color
 				model = glm::translate(model, it->second->pos);
+				//bootom layer = brown
+				if (it->second->pos.y == 0)
+					color = glm::vec4(0.078f, 0.031f, 0.008f, 1.0f);
+				//top layer light gray
+				if (it->second->pos.y == aquariumHeight - 1.0f)
+					color = glm::vec4(0.773, 0.843, 0.929, 0.2f);
+
 				windowShader.setMat4("model", model);
-				if (it->second->windowType == TransparentObj::WindowType::SQUARE) {
-					drawSquare();
-				}
-				if (it->second->windowType == TransparentObj::WindowType::RECT) {
-					drawRect();
+				windowShader.SetVec4("color", color);
+				switch (it->second->windowType) {
+					case TransparentObj::WindowType::SQUARE:
+						drawSquare();
+						break;
+					case TransparentObj::WindowType::RECT:
+						drawRect();
+						break;
+					case TransparentObj::WindowType::CEILING:
+						drawCeiling();
+						break;
 				}
 			}
 		}
