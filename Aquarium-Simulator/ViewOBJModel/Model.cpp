@@ -10,10 +10,45 @@ Model::Model(string const& path, bool bSmoothNormals, bool gamma) : gammaCorrect
     loadModel(path, bSmoothNormals);
 }
 
+void Model::setPos(glm::vec3 startPos, glm::vec3 targetPos, float rotation)
+{
+    this->rotation = rotation;
+    this->startPos = startPos;
+    this->targetPos = targetPos;
+    currentPos = startPos;
+}
+
 void Model::Draw(Shader& shader)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);
+}
+
+bool Model::moveObject(float moveIncrement, float rotateIncrement){
+    if (glm::distance(currentPos, targetPos) <= moveIncrement) {
+        
+        if (rotate180(rotateIncrement)) {
+            currentPos = targetPos;
+            std::swap(startPos, targetPos);
+        }
+        return true; // Return true when position is approximately equal to target
+    }
+    glm::vec3 direction = glm::normalize(targetPos - currentPos);
+    currentPos += direction * moveIncrement;
+    // Check if position is approximately equal to the target within a given error margin
+    return false; // Return false if position is not yet equal to target
+}
+
+bool Model::rotate180(float rotateIncrement)
+{
+    if (currentRotationIncrement >= 180.0f) {
+        currentRotationIncrement = 0.0f;
+        rotation = std::floor(rotation);
+        return true;
+    }
+    currentRotationIncrement += rotateIncrement;
+    rotation += rotateIncrement;
+    return false;
 }
 
 void Model::loadModel(string const& path, bool bSmoothNormals)

@@ -534,6 +534,9 @@ Model castleObjModel;
 Model turtleObjModel;
 Model treasureObjModel;
 
+float incrementMoveSpeed = 0.01;
+float incrementRotationSpeed = 0.4;
+
 void renderScene(Shader& shader){
 	//test draw floor
 	{
@@ -542,27 +545,12 @@ void renderScene(Shader& shader){
 		shader.setMat4("model", model);
 		renderFloor();
 	}
-	
-
-	//change fish poz
-	fishPos.x += fishIncrement;
-	if (abs(fishPos.x) >= 4.0f) {
-		fishRotation += fishRotationIncrement;
-		fishIncrement = 0;
-		if (fishRotation <= 0.0f || fishRotation >= 180.0f) {
-			fishRotationIncrement *= -1.0f;
-			if (fishRotationIncrement < 0)
-				fishIncrement = 0.005f;
-			else
-				fishIncrement = -0.005f;
-		}
-	}
-
 	glm::mat4 model{ glm::mat4(1.0f) };
-	model = glm::translate(glm::mat4(1.0f), glm::vec3(6.0f, 1.0f, 3.3f) + fishPos);
+	fishObjModel.moveObject(incrementMoveSpeed, incrementRotationSpeed);
+	model = glm::translate(glm::mat4(1.0f), fishObjModel.currentPos);
 	model = glm::scale(model, glm::vec3(0.03f));
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(fishRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(fishObjModel.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	shader.setMat4("model", model);
 	fishObjModel.Draw(shader);
@@ -739,6 +727,7 @@ int main()
 	// --------------------
 	std::string fishObjFileName = (currentPath + "\\Models\\Fish\\12265_Fish_v1_L2.obj");
 	fishObjModel = Model(fishObjFileName, false);
+	fishObjModel.setPos(glm::vec3(6.0f, 1.0f, 3.3f), glm::vec3(10.0f, 4.0f, 1.3f), 180.0f);
 
 	std::string fish2ObjFileName = (currentPath + "\\Models\\fish2\\13007_Blue-Green_Reef_Chromis_v2_l3.obj");
 	fish2ObjModel = Model(fish2ObjFileName, false);
@@ -823,7 +812,7 @@ int main()
 
 	// lighting info
    // -------------
-	glm::vec3 lightPos(10.0f, 5.0f, 2.5f);
+	glm::vec3 lightPos(14.0f, 5.0f, 2.5f);
 
 	glEnable(GL_CULL_FACE);
 
